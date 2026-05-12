@@ -7,7 +7,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const empresas = (searchParams.get("empresas") ?? "LATAM,GOL,AZUL").split(",").filter(Boolean);
+  const empresasStr = searchParams.get("empresas") ?? "LATAM,GOL,AZUL";
+  const empresas = empresasStr.split(",").filter(Boolean);
   const anoInicio = Number(searchParams.get("anoInicio") ?? new Date().getFullYear() - 3);
   const anoFim = Number(searchParams.get("anoFim") ?? new Date().getFullYear());
 
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
              ask_por_aeronave, ciclos_por_aeronave, idade_media,
              aeronaves_ativas, load_factor
       FROM v_utilizacao_frota
-      WHERE sigla_atual = ANY(${empresas})
+      WHERE sigla_atual = ANY(string_to_array(${empresasStr}, ','))
         AND ano >= ${anoInicio}
         AND ano <= ${anoFim}
       ORDER BY ano, mes

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const empresas = (searchParams.get("empresas") ?? "LATAM,GOL,AZUL").split(",").filter(Boolean);
+  const empresasStr = searchParams.get("empresas") ?? "LATAM,GOL,AZUL";
   const anoInicio = Number(searchParams.get("anoInicio") ?? new Date().getFullYear() - 4);
   const anoFim = Number(searchParams.get("anoFim") ?? new Date().getFullYear());
 
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       SELECT sigla_atual, nome_comercial, ano, trimestre,
              load_factor, rpk, ask, yield_nominal, prask, pax_pagos
       FROM v_yield_trimestral
-      WHERE sigla_atual = ANY(${empresas})
+      WHERE sigla_atual = ANY(string_to_array(${empresasStr}, ','))
         AND ano >= ${anoInicio}
         AND ano <= ${anoFim}
       ORDER BY ano, trimestre

@@ -2,7 +2,7 @@ name: ANAC Data Ingest
 
 on:
   schedule:
-    - cron: "0 6 1 * *"   # dia 1 de cada mês às 06h UTC
+    - cron: "0 6 12 * *"  # dia 12 de cada mês às 06h UTC (ANAC atualiza ~dia 11)
   workflow_dispatch:
     inputs:
       full:

@@ -34,6 +34,16 @@ ANAC_MIN_YEAR = 2010
 # Chave: como aparece nos CSVs de Dados Estatísticos e Tarifas
 # Valor: sigla canônica
 EMPRESA_MAP: dict[str, str] = {
+    # Códigos ANAC (siglas curtas usadas nos CSVs de Dados Estatísticos)
+    "AZU":          "AZUL",
+    "GLO":          "GOL",
+    "TIB":          "AZUL",    # TRIP Serviços de Suporte Aéreo → Azul
+    "ACN":          "AZUL",    # Azul Conecta
+    "ONE":          "AVIANCA", # Oceanair → Avianca Brasil
+    "PTB":          "VOEPASS", # Passaredo → VoePass
+    "WEB":          "GOL",     # Webjet → GOL
+    "PAM":          "MAP",
+    # Nomes por extenso (formato antigo dos CSVs)
     "TAM":          "LATAM",
     "LAN BRASIL":   "LATAM",
     "LAN":          "LATAM",

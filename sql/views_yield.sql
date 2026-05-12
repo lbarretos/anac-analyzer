@@ -8,7 +8,6 @@
 -- ────────────────────────────────────────────
 CREATE MATERIALIZED VIEW IF NOT EXISTS v_operacional_mensal AS
 SELECT
-    s.empresa_sigla,
     e.sigla_atual,
     e.nome_comercial,
     s.ano,
@@ -28,7 +27,7 @@ FROM stg_stats s
 JOIN dim_empresa e ON s.empresa_sigla = e.sigla_raw
 WHERE s.natureza = 'DOMÉSTICA'
   AND s.ano >= 2010
-GROUP BY 1, 2, 3, 4, 5, 6;
+GROUP BY 1, 2, 3, 4, 5;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_v_operacional_mensal_pk
     ON v_operacional_mensal (sigla_atual, ano, mes);

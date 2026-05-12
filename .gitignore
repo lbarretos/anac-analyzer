@@ -1,0 +1,21 @@
+# Dados brutos (nunca commitar — podem ser centenas de MB)
+data/raw/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Next.js
+app/.next/
+app/node_modules/
+app/.env.local
+app/.env*.local
+
+# OS
+.DS_Store
+Thumbs.db
+.gstack/

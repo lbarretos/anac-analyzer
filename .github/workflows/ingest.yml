@@ -1,0 +1,50 @@
+name: ANAC Data Ingest
+
+on:
+  schedule:
+    - cron: "0 6 1 * *"   # dia 1 de cada mês às 06h UTC
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Carga completa (reprocessa desde 2010)"
+        required: false
+        default: "false"
+        type: boolean
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run ETL
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ "${{ github.event.inputs.full }}" = "true" ]; then
+            python etl/run_all.py --full
+          else
+            python etl/run_all.py
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::ETL falhou — verificar logs acima."
+          echo "Dica: rode manualmente com workflow_dispatch para testar localmente."

@@ -31,7 +31,6 @@ def _try_download(url: str, dest: Path) -> Path | None:
 
 def download_all() -> dict[str, Path | None]:
     return {
-        "stats":   _download(ANAC_STATS_URL, RAW_DIR / "Dados_Estatisticos.csv"),
-        "tarifas": _try_download(ANAC_TARIFAS_URL, RAW_DIR / "Tarifas_Aereas_Domesticas.csv"),
-        "rab":     _download(ANAC_RAB_URL,   RAW_DIR / "RelatorioRAB.csv"),
+        "stats": _download(ANAC_STATS_URL, RAW_DIR / "Dados_Estatisticos.csv"),
+        "rab":   _download(ANAC_RAB_URL,   RAW_DIR / "RelatorioRAB.csv"),
     }

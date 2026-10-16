@@ -18,9 +18,10 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from download import download_all
 from transform_stats import transform as transform_stats
-from transform_tarifas import transform as transform_tarifas
+from transform_tarifas import transform as transform_tarifas, process_year as process_year_tarifas
 from transform_rab import transform as transform_rab
 from load_supabase import upsert_table, get_max_periodo, get_client, refresh_materialized_views
+from config import ANAC_MIN_YEAR
 
 
 def run(full: bool = False) -> None:
@@ -56,15 +57,24 @@ def run(full: bool = False) -> None:
 
     # ── 3. Transform + Load: Tarifas ─────────────────────
     print("\n[3/4] Tarifas Domésticas...")
-    if paths["tarifas"] is None:
-        print("  AVISO: arquivo de tarifas não disponível, pulando.")
-    else:
-        try:
-            df_tarifas = transform_tarifas(str(paths["tarifas"]))
-            upsert_table(df_tarifas, "stg_tarifas")
-        except Exception as e:
-            print(f"  ERRO em Tarifas: {e}")
-            errors.append(f"stg_tarifas: {e}")
+    try:
+        current_year = date.today().year
+        if full:
+            start_year = ANAC_MIN_YEAR
+        else:
+            max_periodo = get_max_periodo("stg_tarifas")
+            start_year = max_periodo[0] if max_periodo else ANAC_MIN_YEAR
+
+        for y in range(start_year, current_year + 1):
+            print(f"  [Tarifas] Processando ano {y}...")
+            df_year = process_year_tarifas(y)
+            if not df_year.empty:
+                upsert_table(df_year, "stg_tarifas")
+            else:
+                print(f"  [Tarifas] Sem dados para {y}")
+    except Exception as e:
+        print(f"  ERRO em Tarifas: {e}")
+        errors.append(f"stg_tarifas: {e}")
 
     # ── 4. Transform + Load: RAB ─────────────────────────
     print("\n[4/4] RAB...")

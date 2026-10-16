@@ -61,3 +61,39 @@ def test_dedup():
         f.write(csv)
     df = transform(path)
     assert len(df) == 1
+
+
+def test_decimal_formats():
+    # Testa formato antigo com vírgula e formato novo (pós-out/2024) com ponto
+    csv = make_csv(
+        "LATAM;2024;3;SBSP;SBGL;350,50;100",
+        "LATAM;2024;4;SBSP;SBGL;420.75;100",
+    )
+    path = "/tmp/test_tarifas_decimals.csv"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(csv)
+    df = transform(path)
+    assert len(df) == 2
+    row_comma = df[df["trimestre"] == 3].iloc[0]
+    row_dot = df[df["trimestre"] == 4].iloc[0]
+    assert row_comma["tarifa_media"] == 350.50
+    assert row_dot["tarifa_media"] == 420.75
+
+
+def test_canonical_column_variations():
+    # Testa cabeçalho alternativo com prefixos nr_/sg_
+    csv = (
+        "SG_EMPRESA_ICAO;NR_ANO_REFERENCIA;NR_MES_REFERENCIA;SG_ICAO_ORIGEM;SG_ICAO_DESTINO;NR_TARIFA;NR_ASSENTOS\n"
+        "GLO;2024;10;SBBR;SBCF;299.90;50\n"
+    )
+    path = "/tmp/test_tarifas_canonical.csv"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(csv)
+    df = transform(path)
+    assert len(df) == 1
+    assert df.iloc[0]["empresa_sigla"] == "GOL"
+    assert df.iloc[0]["ano"] == 2024
+    assert df.iloc[0]["trimestre"] == 4
+    assert df.iloc[0]["tarifa_media"] == 299.90
+    assert df.iloc[0]["passageiros"] == 50
+

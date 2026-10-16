@@ -21,6 +21,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Link href="/yield" className="text-sm text-gray-400 hover:text-white transition-colors">
             A1 — Yield & PRASK
           </Link>
+          <Link href="/volume" className="text-sm text-gray-400 hover:text-white transition-colors">
+            A2 — Volume Mensal
+          </Link>
           <Link href="/frota" className="text-sm text-gray-400 hover:text-white transition-colors">
             A4 — Utilização de Frota
           </Link>

@@ -14,8 +14,11 @@ app/.next/
 app/node_modules/
 app/.env.local
 app/.env*.local
+*.tsbuildinfo
+app/tsconfig.tsbuildinfo
 
 # OS
 .DS_Store
 Thumbs.db
 .gstack/
+.vercel

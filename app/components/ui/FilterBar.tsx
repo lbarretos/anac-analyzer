@@ -15,17 +15,19 @@ export const ANO_MIN = 2010;
 export const ANO_MAX = new Date().getFullYear();
 
 interface FilterBarProps {
-  mode: "yield" | "frota";
+  mode: "yield" | "frota" | "volume";
+  empresasOpcoes?: { value: string; label: string }[];
 }
 
-export default function FilterBar({ mode }: FilterBarProps) {
+export default function FilterBar({ mode, empresasOpcoes }: FilterBarProps) {
   const router = useRouter();
   const params = useSearchParams();
 
   const selectedEmpresas = params.get("empresas")?.split(",").filter(Boolean) ?? ["LATAM", "GOL", "AZUL"];
   const anoInicio = Number(params.get("anoInicio") ?? ANO_MAX - 4);
   const anoFim    = Number(params.get("anoFim")    ?? ANO_MAX);
-  const metrica   = params.get("metrica") ?? (mode === "yield" ? "yield_nominal" : "ask_por_aeronave");
+  const defaultMetrica = mode === "yield" ? "yield_nominal" : mode === "volume" ? "ask_total" : "ask_por_aeronave";
+  const metrica   = params.get("metrica") ?? defaultMetrica;
 
   const update = useCallback((key: string, value: string) => {
     const next = new URLSearchParams(params.toString());
@@ -51,14 +53,19 @@ export default function FilterBar({ mode }: FilterBarProps) {
     { value: "ciclos_por_aeronave", label: "Ciclos/Aeronave" },
     { value: "idade_media",         label: "Idade Média (anos)" },
   ];
-  const metricas = mode === "yield" ? yieldMetricas : frotaMetricas;
+  const volumeMetricas = [
+    { value: "ask_total",          label: "ASK Total (seat-km)" },
+    { value: "pax_total",          label: "Passageiros Pagos" },
+    { value: "load_factor_setor",  label: "Load Factor Setorial" },
+  ];
+  const metricas = mode === "yield" ? yieldMetricas : mode === "volume" ? volumeMetricas : frotaMetricas;
 
   return (
     <div className="flex flex-wrap gap-4 items-center p-4 rounded-lg border border-gray-800 bg-gray-900 mb-6">
       {/* Empresas */}
       <div className="flex gap-2 flex-wrap">
         <span className="text-xs text-gray-500 self-center mr-1">Empresas:</span>
-        {EMPRESAS.map(e => (
+        {(empresasOpcoes ?? EMPRESAS).map(e => (
           <button
             key={e.value}
             onClick={() => toggleEmpresa(e.value)}

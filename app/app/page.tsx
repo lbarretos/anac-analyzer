@@ -18,7 +18,7 @@ export default async function HomePage() {
         </p>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         <Link
           href="/yield"
           className="block p-6 rounded-xl border border-gray-800 hover:border-blue-700 hover:bg-gray-900 transition-all group"
@@ -33,6 +33,23 @@ export default async function HomePage() {
           </p>
           <p className="text-xs text-gray-600 mt-4">
             Fontes: Dados Estatísticos × Tarifas Domésticas
+          </p>
+        </Link>
+
+        <Link
+          href="/volume"
+          className="block p-6 rounded-xl border border-gray-800 hover:border-violet-700 hover:bg-gray-900 transition-all group"
+        >
+          <div className="text-xs text-violet-500 font-mono mb-2">Análise A2</div>
+          <h2 className="text-xl font-semibold text-white mb-2 group-hover:text-violet-300">
+            Volume Mensal
+          </h2>
+          <p className="text-sm text-gray-400">
+            Evolução mensal de RPK, ASK, passageiros pagos, decolagens e load factor.
+            Comparações por empresa e consolidação setorial.
+          </p>
+          <p className="text-xs text-gray-600 mt-4">
+            Fonte: Dados Estatísticos ANAC
           </p>
         </Link>
 

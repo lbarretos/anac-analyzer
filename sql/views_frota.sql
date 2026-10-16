@@ -6,8 +6,8 @@
 -- Usa snapshot mais recente do RAB.
 -- situacao = 'RBAC 121' (grandes companhias) ou 'RBAC 135' (regionais)
 -- ────────────────────────────────────────────
-DROP MATERIALIZED VIEW IF EXISTS v_utilizacao_frota;
-DROP MATERIALIZED VIEW IF EXISTS v_frota_ativa;
+DROP MATERIALIZED VIEW IF EXISTS v_utilizacao_frota CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS v_frota_ativa CASCADE;
 
 CREATE MATERIALIZED VIEW v_frota_ativa AS
 SELECT
@@ -18,9 +18,11 @@ SELECT
     ROUND(AVG(r.assentos)::NUMERIC, 0)                                               AS assentos_medios,
     STRING_AGG(DISTINCT r.modelo, ', ' ORDER BY r.modelo)                            AS modelos
 FROM stg_rab r
-JOIN dim_empresa e ON r.operador ILIKE '%' || e.razao_social || '%'
-                   OR e.razao_social ILIKE '%' || r.operador || '%'
-WHERE r.situacao IN ('RBAC 121', 'RBAC 135')
+JOIN dim_empresa e ON TRANSLATE(UPPER(r.operador), 'ÁÉÍÓÚÀÈÌÒÙÃÕÂÊÎÔÛÇ', 'AEIOUAEIOUAOAEIOUC')
+                   LIKE '%' || TRANSLATE(UPPER(e.razao_social), 'ÁÉÍÓÚÀÈÌÒÙÃÕÂÊÎÔÛÇ', 'AEIOUAEIOUAOAEIOUC') || '%'
+WHERE r.snapshot_date = (SELECT MAX(snapshot_date) FROM stg_rab)
+  AND r.situacao IN ('RBAC 121', 'RBAC 135')
+  AND e.ativa = TRUE
 GROUP BY 1, 2;
 
 CREATE UNIQUE INDEX idx_v_frota_ativa_pk ON v_frota_ativa (sigla_atual);
@@ -61,8 +63,6 @@ LEFT JOIN v_frota_ativa f ON o.sigla_atual = f.sigla_atual;
 CREATE UNIQUE INDEX idx_v_utilizacao_frota_pk
     ON v_utilizacao_frota (sigla_atual, ano, mes);
 
--- Refresh (chamar após refresh das views de yield):
+-- Refresh:
 -- REFRESH MATERIALIZED VIEW CONCURRENTLY v_frota_ativa;
 -- REFRESH MATERIALIZED VIEW CONCURRENTLY v_utilizacao_frota;
-
--- Acesso via API routes (Next.js) — sem GRANTs para roles específicas.

@@ -16,11 +16,11 @@ SELECT
     SUM(s.passageiros_pagos)                              AS pax_pagos,
     SUM(s.assentos_disponibilizados)                      AS assentos_totais,
     SUM(s.decolagens)                                     AS decolagens,
-    SUM(s.passageiros_pagos * s.distancia_km)             AS rpk,
-    SUM(s.assentos_disponibilizados * s.distancia_km)     AS ask,
-    CASE WHEN SUM(s.assentos_disponibilizados * s.distancia_km) > 0
-        THEN SUM(s.passageiros_pagos * s.distancia_km)::NUMERIC
-           / SUM(s.assentos_disponibilizados * s.distancia_km)
+    SUM(CASE WHEN s.decolagens > 0 THEN s.passageiros_pagos * (s.distancia_km / s.decolagens) ELSE 0 END)             AS rpk,
+    SUM(CASE WHEN s.decolagens > 0 THEN s.assentos_disponibilizados * (s.distancia_km / s.decolagens) ELSE 0 END)     AS ask,
+    CASE WHEN SUM(CASE WHEN s.decolagens > 0 THEN s.assentos_disponibilizados * (s.distancia_km / s.decolagens) ELSE 0 END) > 0
+        THEN SUM(CASE WHEN s.decolagens > 0 THEN s.passageiros_pagos * (s.distancia_km / s.decolagens) ELSE 0 END)::NUMERIC
+           / SUM(CASE WHEN s.decolagens > 0 THEN s.assentos_disponibilizados * (s.distancia_km / s.decolagens) ELSE 0 END)
         ELSE NULL
     END AS load_factor
 FROM stg_stats s

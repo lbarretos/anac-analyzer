@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
+import { ParamError, parseEmpresas, parseNatureza, parseYear } from "../../../lib/params";
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -7,10 +8,21 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const empresasStr = searchParams.get("empresas") ?? "LATAM,GOL,AZUL";
-  const anoInicio   = Number(searchParams.get("anoInicio") ?? new Date().getFullYear() - 4);
-  const anoFim      = Number(searchParams.get("anoFim")    ?? new Date().getFullYear());
-  const natureza    = searchParams.get("natureza") ?? "DOMÉSTICA";
+  let empresasStr: string;
+  let anoInicio: number;
+  let anoFim: number;
+  let natureza: string;
+  try {
+    empresasStr = parseEmpresas(searchParams.get("empresas"), "LATAM,GOL,AZUL");
+    anoInicio = parseYear(searchParams.get("anoInicio"), new Date().getFullYear() - 4, "anoInicio");
+    anoFim = parseYear(searchParams.get("anoFim"), new Date().getFullYear(), "anoFim");
+    natureza = parseNatureza(searchParams.get("natureza"), "DOMÉSTICA");
+  } catch (e) {
+    if (e instanceof ParamError) {
+      return NextResponse.json({ error: e.message }, { status: 400 });
+    }
+    throw e;
+  }
 
   try {
     const [byEmpresa, setor, empresasRows] = await Promise.all([
@@ -102,6 +114,7 @@ export async function GET(request: NextRequest) {
       })),
     });
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    console.error("[api/volume]", err);
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }

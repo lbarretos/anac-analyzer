@@ -580,8 +580,6 @@ Antes de expor no dashboard, validar:
 
 ---
 
-<!-- /autoplan restore point: /Users/lucasbarreto/.gstack/projects/anac-analyzer/-autoplan-restore-20260508-204348.md -->
-
 ## XI. /autoplan Review Report — 2026-05-08
 
 **Reviewed by:** Claude Subagent (CEO) + Claude Subagent (Design) + Claude Subagent (Eng)

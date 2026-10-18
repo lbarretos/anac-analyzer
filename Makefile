@@ -1,22 +1,28 @@
-.PHONY: setup etl etl-full test dev build
+.PHONY: setup etl etl-full test check eval mcp dev build
 
 setup:
-	pip install -r requirements-dev.txt
-	cd app && npm install
+	./setup.sh
 
-# Carga incremental (uso recorrente)
-etl:
-	cd etl && python run_all.py
+check:
+	.venv/bin/python scripts/check_integrity.py
 
-# Carga completa desde 2010 (primeira vez)
-etl-full:
-	cd etl && python run_all.py --full
+eval:
+	.venv/bin/python scripts/eval/eval_llm.py
+
+mcp:
+	.venv/bin/python scripts/mcp/anac_mcp.py
 
 test:
-	pytest tests/ -v
+	.venv/bin/pytest tests/ -v
+
+etl:
+	.venv/bin/python etl/run_all.py
+
+etl-full:
+	.venv/bin/python etl/run_all.py --full
 
 dev:
-	cd app && npm run dev
+	cd app && bun run dev || npm run dev
 
 build:
-	cd app && npm run build
+	cd app && bun run build || npm run build

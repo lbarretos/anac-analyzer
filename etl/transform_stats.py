@@ -86,6 +86,29 @@ def _clean_chunk(df: pd.DataFrame) -> pd.DataFrame:
     return df[available]
 
 
+def aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
+    """Consolida múltiplos registros para a mesma rota/empresa/mês/natureza."""
+    if df.empty:
+        return pd.DataFrame(columns=OUTPUT_COLS)
+
+    group_cols = ["empresa_sigla", "ano", "mes", "natureza", "origem_icao", "destino_icao"]
+    # Garante que as colunas de agrupamento existam no df
+    present_group_cols = [c for c in group_cols if c in df.columns]
+    if len(present_group_cols) < len(group_cols):
+        return df
+
+    agg_funcs = {}
+    if "empresa_nome" in df.columns:
+        agg_funcs["empresa_nome"] = "first"
+    for col in NUMERIC_COLS:
+        if col in df.columns:
+            agg_funcs[col] = "sum"
+
+    agg = df.groupby(present_group_cols, as_index=False).agg(agg_funcs)
+    available = [c for c in OUTPUT_COLS if c in agg.columns]
+    return agg[available]
+
+
 def transform(path: str) -> pd.DataFrame:
     # Novo formato tem "Atualizado em: ..." na primeira linha
     with open(path, encoding="utf-8-sig") as f:
@@ -103,4 +126,6 @@ def transform(path: str) -> pd.DataFrame:
 
     if not chunks:
         return pd.DataFrame(columns=OUTPUT_COLS)
-    return pd.concat(chunks, ignore_index=True)
+    combined = pd.concat(chunks, ignore_index=True)
+    return aggregate_stats(combined)
+

@@ -1,0 +1,132 @@
+{
+  "version": "1.0",
+  "domain": "ANAC Aviation Analytics",
+  "description": "Conjunto golden de perguntas analíticas para avaliação da qualidade de leitura por LLM e ferramentas MCP",
+  "questions": [
+    {
+      "id": "q001_azul_fleet",
+      "categoria": "frota",
+      "pergunta": "Quantas aeronaves ativas e qual a idade média da frota da Azul Linhas Aéreas no snapshot mais recente do RAB?",
+      "ferramenta_esperada": "get_fleet_metrics",
+      "sql_referencia": "SELECT aeronaves_ativas, idade_media FROM v_frota_ativa WHERE sigla_atual = 'AZUL';",
+      "tipo_resposta": "numero_par",
+      "esperado": {
+        "aeronaves": 372,
+        "idade_media": 12.3
+      },
+      "tolerancia": {
+        "aeronaves": 0,
+        "idade_media": 0.5
+      },
+      "criterio": "Deve identificar exatamente 372 aeronaves e idade média de aproximadamente 12.3 anos para a AZUL."
+    },
+    {
+      "id": "q002_latam_load_factor",
+      "categoria": "operacional",
+      "pergunta": "Qual foi o aproveitamento de assentos (load factor) da LATAM no voo doméstico em julho de 2026?",
+      "ferramenta_esperada": "get_traffic_volume",
+      "sql_referencia": "SELECT load_factor FROM v_operacional_mensal WHERE sigla_atual = 'LATAM' AND ano = 2026 AND mes = 7;",
+      "tipo_resposta": "percentual",
+      "esperado": 85.38,
+      "tolerancia": 0.5,
+      "criterio": "Deve informar load factor de aproximadamente 85.4% (ou 0.8538)."
+    },
+    {
+      "id": "q003_gol_yield_2024q4",
+      "categoria": "yield",
+      "pergunta": "Qual foi o yield nominal da GOL no 4º trimestre de 2024 em R$/RPK?",
+      "ferramenta_esperada": "get_yield_metrics",
+      "sql_referencia": "SELECT yield_nominal FROM v_yield_trimestral WHERE sigla_atual = 'GOL' AND ano = 2024 AND trimestre = 4;",
+      "tipo_resposta": "numero",
+      "esperado": 0.1767,
+      "tolerancia": 0.01,
+      "criterio": "Deve indicar yield nominal de R$ 0.1767 (aprox. R$ 0.18 por RPK)."
+    },
+    {
+      "id": "q004_total_pax_2024",
+      "categoria": "agregacao",
+      "pergunta": "Qual foi o volume total de passageiros domésticos pagos transportados no Brasil em todo o ano de 2024 somando todas as companhias?",
+      "ferramenta_esperada": "query",
+      "sql_referencia": "SELECT sum(pax_pagos) FROM v_operacional_mensal WHERE ano = 2024;",
+      "tipo_resposta": "quantidade",
+      "esperado": 93499821,
+      "tolerancia": 500000,
+      "criterio": "Deve retornar aproximadamente 93.5 milhões de passageiros pagos (93.499.821)."
+    },
+    {
+      "id": "q005_youngest_fleet",
+      "categoria": "comparativo",
+      "pergunta": "Qual das companhias aéreas ativas possui a frota com a menor idade média?",
+      "ferramenta_esperada": "get_fleet_metrics",
+      "sql_referencia": "SELECT sigla_atual, idade_media FROM v_frota_ativa ORDER BY idade_media ASC LIMIT 1;",
+      "tipo_resposta": "entidade",
+      "esperado": {
+        "empresa": "AZUL",
+        "idade_media": 12.3
+      },
+      "tolerancia": {
+        "idade_media": 0.5
+      },
+      "criterio": "Deve apontar a Azul com idade média de cerca de 12.3 anos, significativamente mais jovem que GOL (18.2) e LATAM (24.3)."
+    },
+    {
+      "id": "q006_gol_cycles_2026_08",
+      "categoria": "produtividade",
+      "pergunta": "Qual foi a média de ciclos (decolagens) por aeronave da GOL em agosto de 2026?",
+      "ferramenta_esperada": "get_fleet_utilization",
+      "sql_referencia": "SELECT ciclos_por_aeronave FROM v_utilizacao_frota WHERE sigla_atual = 'GOL' AND ano = 2026 AND mes = 8;",
+      "tipo_resposta": "numero",
+      "esperado": 64.0,
+      "tolerancia": 1.0,
+      "criterio": "Deve retornar exatamente 64.0 ciclos por aeronave."
+    },
+    {
+      "id": "q007_largest_fleet",
+      "categoria": "frota",
+      "pergunta": "Qual companhia aérea possui o maior número de aeronaves comerciais ativas no Brasil segundo o RAB?",
+      "ferramenta_esperada": "get_fleet_metrics",
+      "sql_referencia": "SELECT sigla_atual, aeronaves_ativas FROM v_frota_ativa ORDER BY aeronaves_ativas DESC LIMIT 1;",
+      "tipo_resposta": "entidade",
+      "esperado": {
+        "empresa": "LATAM",
+        "aeronaves": 551
+      },
+      "tolerancia": {
+        "aeronaves": 0
+      },
+      "criterio": "Deve apontar a LATAM com 551 aeronaves ativas."
+    },
+    {
+      "id": "q008_resolve_acronyms",
+      "categoria": "resolucao",
+      "pergunta": "Para quais empresas canônicas atuais são mapeadas as siglas históricas 'TAM' e 'WEBJET'?",
+      "ferramenta_esperada": "resolve_airline",
+      "sql_referencia": "SELECT sigla_raw, sigla_atual FROM dim_empresa WHERE sigla_raw IN ('TAM', 'WEBJET');",
+      "tipo_resposta": "mapeamento",
+      "esperado": {
+        "TAM": "LATAM",
+        "WEBJET": "GOL"
+      },
+      "criterio": "Deve esclarecer que TAM foi absorvida/renomeada para LATAM e Webjet para GOL."
+    },
+    {
+      "id": "q009_yield_methodology_granularity",
+      "categoria": "armadilha_metodologica",
+      "pergunta": "O indicador de Yield Nominal da ANAC é medido e comparável em frequência mensal ou trimestral? Por quê?",
+      "ferramenta_esperada": "describe_table",
+      "tipo_resposta": "texto_explicativo",
+      "termos_obrigatorios": ["trimestral", "tarifas", "ANAC"],
+      "criterio": "Deve explicar que as tarifas aéreas da ANAC são coletadas e consolidadas em nível trimestral (v_yield_trimestral), sendo metodologicamente incorreto calcular yield mensal sem distorção."
+    },
+    {
+      "id": "q010_inactive_company",
+      "categoria": "armadilha_negativa",
+      "pergunta": "Qual é a frota ativa da Varig no snapshot atual do RAB?",
+      "ferramenta_esperada": "get_fleet_metrics",
+      "tipo_resposta": "sem_dado_inativo",
+      "esperado": 0,
+      "criterio": "Deve indicar que a Varig não possui aeronaves comerciais ativas no snapshot atual (inativa) e não aparece na view v_frota_ativa."
+    }
+  ]
+}
+

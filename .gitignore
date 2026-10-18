@@ -17,8 +17,14 @@ app/.env*.local
 *.tsbuildinfo
 app/tsconfig.tsbuildinfo
 
-# OS
+# OS & IDE
 .DS_Store
 Thumbs.db
 .gstack/
 .vercel
+.vscode/
+.pytest_cache/
+*.log
+*.db
+*.sqlite*
+

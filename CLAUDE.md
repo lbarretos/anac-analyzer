@@ -61,8 +61,17 @@ Ao formular análises e consultas SQL, observe as seguintes diretrizes metodoló
 ```bash
 make check     # Audita a integridade estrutural e sanidade de domínio aeronáutico
 make eval      # Roda o benchmark golden de acurácia de leitura por LLM e MCP
-make test      # Executa suíte com 23 testes automatizados via pytest
+make test      # Executa suíte de testes automatizados via pytest
 make mcp       # Inicia o servidor MCP localmente
 make dev       # Inicia o dashboard Next.js local em http://localhost:3000
+python etl/notify_telegram.py --test  # Valida comunicação com o bot do Telegram
 ```
+
+---
+
+## 📲 Alertas de Atualização e Erros (Telegram)
+
+- Script: `etl/notify_telegram.py`
+- Disparado automaticamente ao final do pipeline ETL (`etl/run_all.py`) ou em caso de falha no GitHub Actions (`.github/workflows/ingest.yml`).
+- Credenciais: `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` (configuradas no `.env`, `~/.telegram_notifier.env` ou GitHub Actions Secrets).
 

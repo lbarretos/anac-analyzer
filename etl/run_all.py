@@ -9,6 +9,7 @@ Ordem: download → transform → load → refresh views
 Falha em uma fonte não aborta as demais (continue-on-error por fonte).
 """
 import sys
+import time
 import argparse
 from pathlib import Path
 from datetime import date
@@ -24,7 +25,22 @@ from load_supabase import upsert_table, get_max_periodo, get_client, refresh_mat
 from config import ANAC_MIN_YEAR
 
 
+def _send_telegram(status: str, duracao: str, erros: str = "", detalhes: str = "") -> None:
+    try:
+        from notify_telegram import notify_telegram
+        notify_telegram(
+            projeto="ANAC",
+            status=status,
+            duracao=duracao,
+            erros=erros,
+            detalhes=detalhes,
+        )
+    except Exception as e:
+        print(f"  AVISO: falha ao enviar notificação Telegram: {e}")
+
+
 def run(full: bool = False) -> None:
+    start_time = time.time()
     errors: list[str] = []
 
     # ── 1. Download ──────────────────────────────────────
@@ -33,6 +49,8 @@ def run(full: bool = False) -> None:
         paths = download_all()
     except Exception as e:
         print(f"  ERRO no download: {e}")
+        duracao_str = f"{round((time.time() - start_time) / 60, 1)} min"
+        _send_telegram("falha", duracao_str, erros=f"download: {e}", detalhes="Falha no download das fontes ANAC")
         sys.exit(1)
 
     # ── 2. Transform + Load: Dados Estatísticos ──────────
@@ -95,13 +113,25 @@ def run(full: bool = False) -> None:
         # Não fatal — dados foram carregados, views serão refreshadas na próxima run
 
     # ── Resultado ─────────────────────────────────────────
+    duracao_str = f"{round((time.time() - start_time) / 60, 1)} min"
     if errors:
         print(f"\nETL concluído com {len(errors)} erro(s):")
         for err in errors:
             print(f"  - {err}")
+        _send_telegram(
+            status="falha",
+            duracao=duracao_str,
+            erros="; ".join(errors),
+            detalhes=f"{len(errors)} erro(s) durante o ETL",
+        )
         sys.exit(1)
     else:
         print("\nETL concluído com sucesso.")
+        _send_telegram(
+            status="sucesso",
+            duracao=duracao_str,
+            detalhes="ETL completo executado com sucesso (stats, tarifas, rab, views)",
+        )
 
 
 if __name__ == "__main__":

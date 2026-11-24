@@ -151,10 +151,12 @@ make eval
 
 ## 🧪 Testes Automatizados
 
-Rode a suíte completa de 23 testes automatizados via pytest:
+Rode a suíte completa de testes automatizados via pytest ou unittest:
 
 ```bash
 make test
+# Ou testes específicos:
+.venv/bin/python -m unittest tests/test_notify_telegram.py
 ```
 
 Inclui:
@@ -162,6 +164,28 @@ Inclui:
 - `tests/test_transform_tarifas.py`: Parsers decimais e agregação trimestral de tarifas.
 - `tests/test_data_integrity.py`: Auditoria contínua de integridade do banco de dados.
 - `tests/test_mcp_llm_quality.py`: Validação de contrato e assertividade do servidor MCP.
+- `tests/test_notify_telegram.py`: Validação de envio e formatação de alertas Telegram.
+
+---
+
+## 🤖 Notificações via Telegram & Automação
+
+O pipeline ETL envia alertas para o Telegram ao término da ingestão mensal ou em caso de falha.
+
+### Variáveis de Ambiente Necessárias:
+- `TELEGRAM_BOT_TOKEN`: Token gerado pelo `@BotFather`
+- `TELEGRAM_CHAT_ID`: ID do chat ou canal que receberá os alertas
+
+### Onde configurar:
+1. **GitHub Actions (Nuvem):** Em *Settings > Secrets and variables > Actions* do repositório, configure `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`.
+2. **Ambiente Local:** Configure no `.env` do projeto ou no arquivo global `~/.telegram_notifier.env`.
+
+### Teste de Notificação:
+```bash
+python etl/notify_telegram.py --test
+# Ou envio manual:
+python etl/notify_telegram.py --projeto "ANAC" --status "sucesso" --detalhes "140k voos inseridos"
+```
 
 ---
 
